@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ThinkOrbit Academy — Practice App</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <style>
+    :root{
+      --bg:#ffffff; --ink:#0b1020; --muted:#4b5563; --line:#e5e7eb;
+      --brand:#2563eb; --brand2:#22d3ee; --good:#16a34a; --bad:#ef4444;
+      --card:#ffffff; --shadow:0 10px 20px rgba(2,8,23,0.06); --radius:14px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;background:var(--bg);color:var(--ink)}
+    header{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);z-index:5}
+    .wrap{max-width:980px;margin:0 auto;padding:0 16px 40px}
+    .nav{display:flex;align-items:center;justify-content:space-between;padding:12px 8px}
+    .btn{border:1px solid var(--line);background:#fff;color:var(--ink);padding:8px 12px;border-radius:10px;font-weight:600;cursor:pointer}
+    .btn:hover{box-shadow:0 4px 10px rgba(2,8,23,0.05)}
+    .btn.accent{background:linear-gradient(90deg,var(--brand),var(--brand2));border:none;color:#fff}
+    .grid{display:grid;grid-template-columns: repeat(auto-fill,minmax(260px,1fr)); gap:14px;}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+    .muted{color:var(--muted);font-size:14px}
+    .title{font-size:16px;font-weight:700;margin-bottom:6px}
+    .pill{display:inline-flex;align-items:center;gap:6px;background:#f8fafc;border:1px solid var(--line);color:#111827;padding:4px 10px;border-radius:999px;font-size:12px}
+    .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .section{margin:18px 0 8px;font-weight:800;letter-spacing:0.2px;text-transform:uppercase;color:#334155;font-size:12px}
+    .q-stem{font-size:18px;font-weight:700;margin:2px 0 12px}
+    .options{display:grid;gap:10px}
+    .opt{border:1px solid var(--line);background:#fff;padding:12px;border-radius:12px;cursor:pointer}
+    .opt.correct{outline:2px solid var(--good);}
+    .opt.incorrect{outline:2px solid var(--bad);}
+    .input{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink)}
+    .progress{height:7px;border-radius:999px;background:#f1f5f9;border:1px solid var(--line);overflow:hidden}
+    .progress>div{height:100%;background:linear-gradient(90deg,var(--brand),var(--brand2));width:0%}
+    .badge{font-size:11px;padding:2px 8px;border-radius:999px;background:#f8fafc;border:1px solid var(--line);color:#111827}
+    .hint{background:#f8fafc;border:1px dashed var(--line);padding:10px;border-radius:12px;color:#111827}
+    .small{font-size:12px}
+    .hidden{display:none}
+    @media (prefers-reduced-motion:no-preference){ .opt, .btn{transition:box-shadow .15s ease, transform .04s ease} .opt:active{transform:scale(0.99)} }
+  </style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+    <div class="row" style="gap:10px">
+      <img src="favicon.svg" alt="" style="height:28px;width:28px"/>
+      <strong>ThinkOrbit — Practice</strong>
+    </div>
+    <nav style="display:flex;gap:8px">
+      <button class="btn" id="btn-home">Home</button>
+      <button class="btn" id="btn-progress">Progress</button>
+      <button class="btn" id="btn-import">Import</button>
+      <button class="btn accent" id="btn-start">Quick 10</button>
+    </nav>
+  </div>
+</header>
+<div class="wrap">
+  <div id="screen-home"></div>
+  <div id="screen-practice" class="hidden"></div>
+  <div id="screen-results" class="hidden"></div>
+  <div id="screen-progress" class="hidden"></div>
+  <div id="screen-import" class="hidden"></div>
+</div>
+
+<script>
+const CONTENT = [
+  { packId:"g2-math-numbers", grade:2, subject:"Maths", topic:"Numbers & Place Value", items:[
+    {id:"pv-001", type:"mcq", stem:"What is the place value of 7 in 473?", options:["7","70","700","7000"], answerIndex:2, hint:"Hundreds, tens, ones.", explanation:"In 473, 7 is in the hundreds place → 700."},
+    {id:"add-002", type:"numeric", stem:"Find 38 + 27", answer:65, explanation:"38 + 27 = (30+20) + (8+7) = 50 + 15 = 65."},
+    {id:"tf-003", type:"mcq", stem:"Is 49 an odd number?", options:["Yes","No"], answerIndex:0, explanation:"Odd numbers are not divisible by 2."},
+    {id:"cmp-004", type:"mcq", stem:"Which is greater?", options:["56","65"], answerIndex:1, explanation:"65 > 56."}
+  ]},
+  { packId:"g2-sci-animals", grade:2, subject:"Science", topic:"Animals & Habitats", items:[
+    {id:"ani-001", type:"mcq", stem:"Animal that lives both on land and in water?", options:["Frog","Camel","Eagle","Shark"], answerIndex:0, explanation:"Frogs are amphibians."},
+    {id:"sense-002", type:"mcq", stem:"Which sense helps you smell?", options:["Sight","Touch","Smell","Taste"], answerIndex:2, explanation:"We smell with our nose."},
+    {id:"food-003", type:"mcq", stem:"Which is a herbivore?", options:["Lion","Cow","Eagle","Snake"], answerIndex:1, explanation:"Cows eat plants."}
+  ]},
+  { packId:"g9-phys-kinematics", grade:9, subject:"Physics", topic:"Kinematics (Preview)", items:[
+    {id:"kin-001", type:"numeric", stem:"Displacement after 4 s at 5 m/s? (uniform)", answer:20, explanation:"s = v·t = 5×4 = 20 m"},
+    {id:"kin-002", type:"mcq", stem:"Slope of v–t graph gives?", options:["Velocity","Jerk","Acceleration","Displacement"], answerIndex:2, explanation:"dv/dt = acceleration."}
+  ]}
+];
+
+const KEY = { PROGRESS:'to.progress.v2' };
+const load = (k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d;}catch{return d;}};
+const save = (k,v)=>localStorage.setItem(k,JSON.stringify(v));
+const uid = ()=>Math.random().toString(36).slice(2,9);
+
+const App = { packs:CONTENT, session:null, progress:load(KEY.PROGRESS,{}) };
+
+const show = id => { for (const el of document.querySelectorAll('[id^=screen-]')) el.classList.add('hidden'); document.getElementById(id).classList.remove('hidden'); };
+
+function renderHome(){
+  const root = document.getElementById('screen-home');
+  root.innerHTML = `
+    <div class="row">
+      <div>
+        <div class="section">Choose a pack</div>
+        <div class="muted">Start with Grade‑2 packs. A Grade‑9 preview is included.</div>
+      </div>
+      <div class="pill">Total Packs: ${App.packs.length}</div>
+    </div>
+    <div class="grid">${App.packs.map(pack => cardPack(pack)).join('')}</div>
+  `;
+  root.querySelectorAll('[data-start]').forEach(btn => btn.addEventListener('click', e => {
+    const packId = e.currentTarget.getAttribute('data-start'); startSession(packId);
+  }));
+}
+
+function cardPack(pack){
+  const prog = App.progress[pack.packId] || { attempts:0, correct:0, timeMs:0 };
+  const accuracy = prog.attempts ? Math.round((prog.correct/prog.attempts)*100) : 0;
+  return `
+    <div class="card">
+      <div class="title">${pack.subject} — ${pack.topic}</div>
+      <div class="muted">Grade ${pack.grade} • ${pack.items.length} items</div>
+      <div class="section">Progress</div>
+      <div class="row" style="gap:8px; align-items:center;">
+        <div class="progress" style="flex:1"><div style="width:${accuracy}%"></div></div>
+        <span class="badge">${accuracy}%</span>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn accent" data-start="${pack.packId}">Start</button>
+        <span class="muted small">Attempts: ${prog.attempts||0}</span>
+      </div>
+    </div>
+  `;
+}
+
+function startSession(packId, count=10){
+  const pack = App.packs.find(p=>p.packId===packId); if (!pack) return alert('Pack not found');
+  const queue = shuffle([...pack.items]).slice(0, Math.min(count, pack.items.length));
+  App.session = { id:uid(), packId, queue, index:0, correct:0, total:queue.length, startedAt:Date.now(), history:[] };
+  renderPractice(); show('screen-practice');
+}
+
+function renderPractice(){
+  const s = App.session; const q = s.queue[s.index]; const root = document.getElementById('screen-practice');
+  const prog = Math.round(((s.index)/s.total)*100);
+  root.innerHTML = `
+    <div class="row">
+      <div class="pill">Pack: ${packTitle(s.packId)}</div>
+      <div class="pill">Q ${s.index+1} / ${s.total}</div>
+    </div>
+    <div class="progress" style="margin:10px 0 16px"><div style="width:${prog}%"></div></div>
+    <div class="card">
+      <div class="q-stem">${escapeHtml(q.stem)}</div>
+      ${renderQuestion(q)}
+      <div id="explain" class="hint hidden" style="margin-top:10px"></div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn" id="btn-hint">Hint</button>
+        <button class="btn" id="btn-next">Skip</button>
+      </div>
+    </div>
+  `;
+  bindQuestionHandlers(q);
+}
+
+function renderQuestion(q){
+  if(q.type==='mcq'){
+    return `<div class="options">${q.options.map((opt,i)=>`<div class="opt" data-idx="${i}">${escapeHtml(opt)}</div>`).join('')}</div>`;
+  }
+  if(q.type==='numeric'){
+    return `<input class="input" id="num" placeholder="Type your answer" inputmode="numeric" />
+            <div class="row" style="margin-top:10px"><button class="btn accent" id="btn-submit">Submit</button></div>`;
+  }
+  return `<div class="muted">Unsupported question type.</div>`;
+}
+
+function bindQuestionHandlers(q){
+  const root = document.getElementById('screen-practice');
+  const explainEl = document.getElementById('explain');
+  root.querySelector('#btn-hint').onclick = ()=>{ if (q.hint){ explainEl.textContent = q.hint; explainEl.classList.remove('hidden'); } };
+  root.querySelector('#btn-next').onclick = nextQuestion;
+
+  if(q.type==='mcq'){
+    root.querySelectorAll('.opt').forEach(el=>{
+      el.onclick = ()=>{
+        const idx = Number(el.getAttribute('data-idx'));
+        const correct = idx === q.answerIndex;
+        el.classList.add(correct? 'correct':'incorrect');
+        if(q.options){
+          root.querySelectorAll('.opt').forEach((e,i)=>{ if (i===q.answerIndex) e.classList.add('correct'); e.style.pointerEvents='none'; });
+        }
+        showExplanation(q, correct); recordAnswer(correct);
+      };
+    });
+  }
+  if(q.type==='numeric'){
+    root.querySelector('#btn-submit').onclick = ()=>{
+      const val = Number((document.getElementById('num').value||'').trim());
+      const correct = Number(q.answer) === val;
+      showExplanation(q, correct); recordAnswer(correct);
+    };
+  }
+}
+
+function showExplanation(q, correct){
+  const el = document.getElementById('explain');
+  el.innerHTML = `<div><strong>${correct? 'Correct ✅':'Not quite ❌'}</strong></div>${escapeHtml(q.explanation||'')}`;
+  el.classList.remove('hidden');
+}
+
+function recordAnswer(correct){
+  const s = App.session; s.history.push({i:s.index, correct}); if (correct) s.correct++;
+  setTimeout(nextQuestion, 600);
+}
+
+function nextQuestion(){
+  const s = App.session; s.index++;
+  if(s.index >= s.total) return endSession();
+  renderPractice();
+}
+
+function endSession(){
+  const s = App.session; const elapsed = Date.now()-s.startedAt;
+  const p = App.progress[s.packId] || { attempts:0, correct:0, timeMs:0 };
+  p.attempts += s.total; p.correct += s.correct; p.timeMs += elapsed; App.progress[s.packId]=p; save(KEY.PROGRESS, App.progress);
+  renderResults(); show('screen-results');
+}
+
+function renderResults(){
+  const s = App.session; const pct = Math.round((s.correct/s.total)*100);
+  const root = document.getElementById('screen-results');
+  root.innerHTML = `
+    <div class="card">
+      <div class="title">Session Complete</div>
+      <div class="muted">Correct: ${s.correct}/${s.total} • Accuracy: <strong>${pct}%</strong></div>
+      <div class="section">What next?</div>
+      <div class="row">
+        <button class="btn accent" id="again">Practice Again</button>
+        <button class="btn" id="home">Back to Home</button>
+      </div>
+    </div>`;
+  root.querySelector('#again').onclick = ()=> startSession(s.packId);
+  root.querySelector('#home').onclick = ()=> { App.session=null; renderHome(); show('screen-home'); };
+}
+
+function renderProgress(){
+  const root = document.getElementById('screen-progress');
+  const rows = Object.entries(App.progress).map(([packId, p])=>{
+    const pack = App.packs.find(x=>x.packId===packId);
+    const acc = p.attempts? Math.round((p.correct/p.attempts)*100):0;
+    const mins = Math.round(p.timeMs/60000);
+    return `<tr>
+      <td>${escapeHtml(pack.subject)}</td>
+      <td>${escapeHtml(pack.topic)}</td>
+      <td>${p.attempts}</td>
+      <td>${p.correct}</td>
+      <td>${acc}%</td>
+      <td>${mins}m</td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="6" class="muted">No practice yet. Do a session!</td></tr>`;
+
+  root.innerHTML = `
+    <div class="card">
+      <div class="title">Progress Overview</div>
+      <div class="muted">Saved locally on this device.</div>
+      <div class="section">By Pack</div>
+      <div style="overflow:auto;">
+        <table style="width:100%; border-collapse:collapse;">
+          <thead>
+            <tr class="muted" style="text-align:left; font-size:12px">
+              <th style="padding:8px 6px; border-bottom:1px solid var(--line)">Subject</th>
+              <th style="padding:8px 6px; border-bottom:1px solid var(--line)">Topic</th>
+              <th style="padding:8px 6px; border-bottom:1px solid var(--line)">Attempts</th>
+              <th style="padding:8px 6px; border-bottom:1px solid var(--line)">Correct</th>
+              <th style="padding:8px 6px; border-bottom:1px solid var(--line)">Accuracy</th>
+              <th style="padding:8px 6px; border-bottom:1px solid var(--line)">Time</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn" id="reset">Reset Progress</button>
+        <button class="btn" id="export">Export (JSON)</button>
+      </div>
+    </div>`;
+
+  root.querySelector('#reset').onclick = ()=>{ if(confirm('Clear all progress?')){ App.progress={}; save(KEY.PROGRESS, App.progress); renderProgress(); } };
+  root.querySelector('#export').onclick = ()=>{
+    const blob = new Blob([JSON.stringify(App.progress,null,2)], {type:'application/json'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'progress.json'; a.click();
+  };
+}
+
+function renderImport(){
+  const root = document.getElementById('screen-import');
+  root.innerHTML = `
+    <div class="card">
+      <div class="title">Import Content Pack</div>
+      <div class="muted">Paste a pack JSON (schema below). Duplicate <span style='font-family:monospace'>packId</span> will replace the existing pack.</div>
+      <div class="section">JSON</div>
+      <textarea id="json" class="input" style="min-height:180px; resize:vertical; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;"></textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn accent" id="do-import">Add/Replace Pack</button>
+        <button class="btn" id="back">Back</button>
+      </div>
+    </div>`;
+  root.querySelector('#back').onclick = ()=>{ show('screen-home'); };
+  root.querySelector('#do-import').onclick = ()=>{
+    try {
+      const obj = JSON.parse(root.querySelector('#json').value);
+      if (!obj.packId || !Array.isArray(obj.items)) throw new Error('Invalid pack: packId/items required');
+      const idx = App.packs.findIndex(p=>p.packId===obj.packId);
+      if (idx>=0) App.packs[idx]=obj; else App.packs.push(obj);
+      alert('Pack imported: '+obj.packId);
+      renderHome(); show('screen-home');
+    } catch(e){ alert('Import failed: '+e.message); }
+  };
+}
+
+function escapeHtml(s=''){ return s.replace(/[&<>\"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c])); }
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function packTitle(id){ const p = App.packs.find(x=>x.packId===id); return p? `${p.subject} — ${p.topic}`: id; }
+
+function bindNavbar(){
+  document.getElementById('btn-home').onclick = ()=>{ renderHome(); show('screen-home'); };
+  document.getElementById('btn-progress').onclick = ()=>{ renderProgress(); show('screen-progress'); };
+  document.getElementById('btn-import').onclick = ()=>{ renderImport(); show('screen-import'); };
+  document.getElementById('btn-start').onclick = ()=>{ startSession(App.packs[0].packId); };
+}
+
+(function init(){ bindNavbar(); renderHome(); show('screen-home'); })();
+</script>
+</body>
+</html>
