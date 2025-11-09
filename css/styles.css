@@ -50,3 +50,10 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:#6b7280;font-size:1
 .lead-sm{font-size:14px}
 .lead-muted-sm{font-size:14px;color:#6b7280}
 
+/* Auth area styles */
+.auth-area{display:flex;align-items:center;gap:10px}
+.user{display:flex;align-items:center;gap:8px}
+.user-img{height:32px;width:32px;border-radius:50%}
+.user-name{font-weight:600}
+.signout-btn{border:1px solid var(--line);background:#fff;color:var(--ink);padding:6px 10px;border-radius:10px;font-weight:600;cursor:pointer}
+
