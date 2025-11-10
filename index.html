@@ -16,11 +16,10 @@
         <strong>ThinkOrbit Academy</strong>
       </div>
       <div class="cta">
-        <a class="btn" href="#features">Features</a>
-        <a class="btn" href="#subjects">Subjects</a>
-        <a class="btn primary" href="#try">Try the Demo</a>
-        <!-- Login button: calls showAuthUI() defined in js/auth.js -->
-        <button id="header-login" class="btn" onclick="(window.showAuthUI || (()=>{}))()">Log in</button>
+        <!-- Simplified header: keep only primary demo CTA and login -->
+        <a class="btn primary" href="#try">Launch Demo</a>
+  <!-- Login placeholder: JS will render the Google sign-in button here -->
+  <div id="header-login" class="header-login" role="button" aria-label="Sign in"></div>
       </div>
       <div id="auth" class="auth-area"></div>
     </div>
@@ -40,7 +39,6 @@
         </div>
         <div class="cta">
           <a class="btn primary" href="#try">Launch Demo</a>
-          <a class="btn" href="#contact">Contact</a>
         </div>
       </div>
       <div class="card">
@@ -101,8 +99,8 @@
     <div class="wrap">© <span id="y"></span> ThinkOrbit Academy. All rights reserved.</div>
   </footer>
 
-  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="js/auth.js" defer></script>
+  <script src="js/main.js" defer></script>
 </body>
 </html>

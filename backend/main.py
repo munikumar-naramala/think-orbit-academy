@@ -160,6 +160,16 @@ async def logout(request: Request, response: Response) -> Any:
 @app.get("/")
 async def root():
     return {"message": "ThinkOrbit Academy auth service. POST /login with {id_token}."}
+
+
+@app.get("/config")
+async def config() -> Any:
+    """Return runtime config values needed by the frontend.
+
+    This endpoint exposes the Google OAuth client id from the server environment so the
+    client doesn't need to hardcode it. The value may be null when not configured.
+    """
+    return {"client_id": GOOGLE_CLIENT_ID}
 async def logout(response: Response) -> Any:
     """Clear the session cookie set at /login."""
     cookie_name = os.environ.get("SESSION_COOKIE_NAME", "toa_token")

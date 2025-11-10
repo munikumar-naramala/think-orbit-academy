@@ -57,3 +57,8 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:#6b7280;font-size:1
 .user-name{font-weight:600}
 .signout-btn{border:1px solid var(--line);background:#fff;color:var(--ink);padding:6px 10px;border-radius:10px;font-weight:600;cursor:pointer}
 
+/* Header login placeholder: container for Google button */
+.header-login{display:flex;align-items:center;min-height:36px}
+.header-login:focus{outline:2px solid rgba(37,99,235,0.18);outline-offset:2px;border-radius:8px}
+.header-login > div{display:inline-flex}
+
