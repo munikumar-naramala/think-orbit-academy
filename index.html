@@ -19,6 +19,8 @@
         <a class="btn" href="#features">Features</a>
         <a class="btn" href="#subjects">Subjects</a>
         <a class="btn primary" href="#try">Try the Demo</a>
+        <!-- Login button: calls showAuthUI() defined in js/auth.js -->
+        <button id="header-login" class="btn" onclick="(window.showAuthUI || (()=>{}))()">Log in</button>
       </div>
       <div id="auth" class="auth-area"></div>
     </div>
